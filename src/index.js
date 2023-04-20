@@ -8,7 +8,7 @@ const messagesRoutes = require("../routes/messages");
 const reviewsRoutes = require("../routes/reviews");
 
 const app = express();
-const port = 8080;
+const port = Number(process.env.PORT) || 8080;
 
 const corsOptions = {
   origin: "*",
