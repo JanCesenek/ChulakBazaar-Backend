@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model items {
+  id                        Int       @id @unique @default(autoincrement())
+  name                      String
+  image                     String
+  price                     Int
+  type                      String
+  description               String
+  seller                    String
+  createdAt                 DateTime? @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamptz(6)
+  updatedAt                 DateTime? @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamptz(6)
+  quantity                  Int?      @default(1)
+  users_items_sellerTousers users     @relation("items_sellerTousers", fields: [seller], references: [username], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model messages {
+  id                              Int       @id @default(autoincrement())
+  createdAt                       DateTime? @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamptz(6)
+  sender                          String
+  recipient                       String
+  message                         String
+  system                          Boolean?  @default(false)
+  read                            Boolean?  @default(false)
+  frozen                          Boolean?  @default(false)
+  users_messages_recipientTousers users     @relation("messages_recipientTousers", fields: [recipient], references: [username], onDelete: Cascade, onUpdate: NoAction)
+  users_messages_senderTousers    users     @relation("messages_senderTousers", fields: [sender], references: [username], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model reviews {
+  id                             Int       @id @default(autoincrement())
+  sender                         String
+  recipient                      String
+  rating                         Decimal   @db.Decimal
+  message                        String
+  createdAt                      DateTime? @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamptz(6)
+  users_reviews_recipientTousers users     @relation("reviews_recipientTousers", fields: [recipient], references: [username], onDelete: Cascade, onUpdate: NoAction)
+  users_reviews_senderTousers    users     @relation("reviews_senderTousers", fields: [sender], references: [username], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model users {
+  id                                 Int           @id @unique @default(autoincrement())
+  firstName                          String
+  lastName                           String
+  username                           String        @unique
+  password                           String
+  admin                              Boolean       @default(false)
+  gender                             users_gender? @default(M)
+  profilePicture                     String
+  balance                            Int?          @default(100000)
+  items_items_sellerTousers          items[]       @relation("items_sellerTousers")
+  messages_messages_recipientTousers messages[]    @relation("messages_recipientTousers")
+  messages_messages_senderTousers    messages[]    @relation("messages_senderTousers")
+  reviews_reviews_recipientTousers   reviews[]     @relation("reviews_recipientTousers")
+  reviews_reviews_senderTousers      reviews[]     @relation("reviews_senderTousers")
+}
+
+model transactions {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime? @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamptz(6)
+  quantity  Int
+  total     Int
+  type      String
+  item      Int
+  buyer     String
+  seller    String
+  bought    Boolean?  @default(true)
+}
+
+enum users_gender {
+  M
+  F
+}
