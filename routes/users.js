@@ -1,9 +1,8 @@
 const express = require("express");
-const { PrismaClient } = require("@prisma/client");
 const { checkAuthMiddleWare } = require("../util/auth");
 
 const router = express.Router();
-const prisma = new PrismaClient();
+const prisma = require("./prisma");
 
 router.get("/users", async (req, res) => {
   const users = await prisma.users.findMany();
@@ -12,11 +11,6 @@ router.get("/users", async (req, res) => {
 
 router.delete("/users/:username", checkAuthMiddleWare, async (req, res) => {
   const username = req.params.username;
-  const curUser = await prisma.users.findUnique({
-    where: {
-      username,
-    },
-  });
   if (username === req.token.username || req.token.admin) {
     const deletedUser = await prisma.users.delete({
       where: {
