@@ -6,9 +6,8 @@ const usersRoutes = require("../routes/users");
 const itemsRoutes = require("../routes/items");
 const messagesRoutes = require("../routes/messages");
 const reviewsRoutes = require("../routes/reviews");
-
 const app = express();
-const port = Number(process.env.PORT) || 8080;
+const port = +process.env.PORT || 8080;
 
 const corsOptions = {
   origin: "*",

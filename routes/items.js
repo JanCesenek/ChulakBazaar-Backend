@@ -155,7 +155,7 @@ router
       (data.buyer === req.token.username &&
         data.buyer !== data.seller &&
         data.quantity <= curItem.quantity &&
-        curUser.balance >= curItem.price) ||
+        curUser.balance >= curItem.price * data.quantity) ||
       (data.seller === req.token.username && data.sell)
     ) {
       if (data.sell) {
