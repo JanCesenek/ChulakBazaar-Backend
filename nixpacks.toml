@@ -1,0 +1,6 @@
+[phases]
+setup = "npm install"
+start = "npm run start"
+
+[environment]
+NODE_VERSION = "18"
