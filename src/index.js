@@ -16,6 +16,8 @@ const corsOptions = {
   optionsSuccessStatus: 200,
 };
 
+console.log("Deployment should start now!");
+
 app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
