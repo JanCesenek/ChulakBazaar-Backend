@@ -1,8 +1,0 @@
-[phases.setup]
-cmds = ["npm install"]
-
-[phases.start]
-cmd = "npm run start"
-
-[environment]
-NODE_VERSION = "18"
