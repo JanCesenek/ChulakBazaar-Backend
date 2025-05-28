@@ -10,20 +10,19 @@ const { v4: uuidv4 } = require("uuid");
 const app = express();
 const port = +process.env.PORT || 8080;
 const uuid = uuidv4();
+const { hash } = require("bcryptjs");
 
 const corsOptions = {
   origin: "*",
   optionsSuccessStatus: 200,
 };
 
-console.log("Deployment should start now!");
-
 app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.get("/", (_, res) => {
-  res.json(`Success! 😊 Today's lucky code is ${uuid}`);
+app.get("/", async (_, res) => {
+  res.json(await hash("Johnnygarlic*105", 16)).toString();
 });
 
 app.use(authRoutes);
