@@ -4,7 +4,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 async function get(username) {
-  const user = await prisma.users.findUnique({
+  const user = await prisma.bazaar_users.findUnique({
     where: {
       username,
     },

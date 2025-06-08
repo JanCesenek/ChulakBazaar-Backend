@@ -7,12 +7,12 @@ const prisma = require("./prisma");
 router
   .route("/messages")
   .get(async (req, res) => {
-    const messages = await prisma.messages.findMany();
+    const messages = await prisma.bazaar_messages.findMany();
     res.json(messages);
   })
   .post(checkAuthMiddleWare, async (req, res) => {
     const data = req.body;
-    const frozenChat = await prisma.messages.findFirst({
+    const frozenChat = await prisma.bazaar_messages.findFirst({
       where: {
         OR: [
           {
@@ -34,7 +34,7 @@ router
       !data.system &&
       !frozenChat
     ) {
-      const newMessage = await prisma.messages.create({
+      const newMessage = await prisma.bazaar_messages.create({
         data,
       });
       res.status(201).json({ message: "Message sent successfully!", newMessage });
@@ -48,7 +48,7 @@ router
   })
   .patch(checkAuthMiddleWare, async (req, res) => {
     if (req.body.username === req.token.username) {
-      const readMessages = await prisma.messages.updateMany({
+      const readMessages = await prisma.bazaar_messages.updateMany({
         where: {
           recipient: req.body.username,
           sender: req.body.sender,
@@ -69,13 +69,13 @@ router
 
 router.delete("/messages/:id", checkAuthMiddleWare, async (req, res) => {
   const id = Number(req.params.id);
-  const curMessage = await prisma.messages.findUnique({
+  const curMessage = await prisma.bazaar_messages.findUnique({
     where: {
       id,
     },
   });
   if (req.token.username === curMessage.sender) {
-    const deletedMessage = await prisma.messages.delete({
+    const deletedMessage = await prisma.bazaar_messages.delete({
       where: {
         id,
       },
@@ -92,7 +92,7 @@ router.delete("/messages/:id", checkAuthMiddleWare, async (req, res) => {
 
 router.post("/freeze", checkAuthMiddleWare, async (req, res) => {
   const data = req.body;
-  const alreadyFrozen = await prisma.messages.findFirst({
+  const alreadyFrozen = await prisma.bazaar_messages.findFirst({
     where: {
       sender: data.sender,
       recipient: data.recipient,
@@ -100,7 +100,7 @@ router.post("/freeze", checkAuthMiddleWare, async (req, res) => {
     },
   });
   if (data.sender === req.token.username && !alreadyFrozen) {
-    const frozenChat = await prisma.messages.create({
+    const frozenChat = await prisma.bazaar_messages.create({
       data,
     });
     res.status(201).json({ message: "Chat frozen successfully!", frozenChat });
@@ -117,7 +117,7 @@ router.delete("/freeze/:sender/:recipient", checkAuthMiddleWare, async (req, res
   const sender = req.params.sender;
   const recipient = req.params.recipient;
   if (sender === req.token.username) {
-    const unfrozenChat = await prisma.messages.deleteMany({
+    const unfrozenChat = await prisma.bazaar_messages.deleteMany({
       where: {
         sender,
         recipient,

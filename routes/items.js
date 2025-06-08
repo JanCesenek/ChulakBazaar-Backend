@@ -7,14 +7,14 @@ const prisma = require("./prisma");
 router
   .route("/items")
   .get(async (req, res) => {
-    const items = await prisma.items.findMany();
+    const items = await prisma.bazaar_items.findMany();
     res.json(items);
   })
   .post(checkAuthMiddleWare, async (req, res) => {
     if (req.token.username === req.body.seller) {
       const data = req.body;
       console.log(data);
-      const newItem = await prisma.items.create({
+      const newItem = await prisma.bazaar_items.create({
         data,
       });
       res.status(201).json({ message: "Item created successfully.", newItem });
@@ -32,14 +32,14 @@ router
   .patch(checkAuthMiddleWare, async (req, res) => {
     const id = Number(req.params.id);
     const data = req.body;
-    const curItem = await prisma.items.findUnique({
+    const curItem = await prisma.bazaar_items.findUnique({
       where: {
         id,
       },
     });
     if (req.token.username === curItem.seller) {
       if (data.restock) {
-        const updatedItem = await prisma.items.update({
+        const updatedItem = await prisma.bazaar_items.update({
           where: {
             id,
           },
@@ -51,7 +51,7 @@ router
         });
         res.status(201).json({ message: "Item restocked successfully!", updatedItem });
       } else {
-        const updatedItem = await prisma.items.update({
+        const updatedItem = await prisma.bazaar_items.update({
           where: {
             id,
           },
@@ -74,25 +74,25 @@ router
   })
   .delete(checkAuthMiddleWare, async (req, res) => {
     const id = Number(req.params.id);
-    const curUser = await prisma.users.findUnique({
+    const curUser = await prisma.bazaar_users.findUnique({
       where: {
         username: req.token.username,
       },
     });
-    const curItem = await prisma.items.findUnique({
+    const curItem = await prisma.bazaar_items.findUnique({
       where: {
         id,
       },
     });
     if (curUser.username === req.token.username || req.token.admin) {
       if (curItem.type === "bid") {
-        const curBid = await prisma.transactions.findFirst({
+        const curBid = await prisma.bazaar_transactions.findFirst({
           where: {
             item: curItem.id,
           },
         });
         if (curBid) {
-          const returnMoney = await prisma.users.update({
+          const returnMoney = await prisma.bazaar_users.update({
             where: {
               username: curBid.buyer,
             },
@@ -102,12 +102,12 @@ router
               },
             },
           });
-          const deleteBid = await prisma.transactions.deleteMany({
+          const deleteBid = await prisma.bazaar_transactions.deleteMany({
             where: {
               item: curItem.id,
             },
           });
-          const deletedItem = await prisma.items.delete({
+          const deletedItem = await prisma.bazaar_items.delete({
             where: {
               id,
             },
@@ -117,7 +117,7 @@ router
             .json({ message: "Item deleted successfully!", deletedItem, returnMoney, deleteBid });
         }
       }
-      const deletedItem = await prisma.items.delete({
+      const deletedItem = await prisma.bazaar_items.delete({
         where: {
           id,
         },
@@ -136,17 +136,17 @@ router
 router
   .route("/transactions")
   .get(async (req, res) => {
-    const transactions = await prisma.transactions.findMany();
+    const transactions = await prisma.bazaar_transactions.findMany();
     res.json(transactions);
   })
   .post(checkAuthMiddleWare, async (req, res) => {
     const data = req.body;
-    const curItem = await prisma.items.findUnique({
+    const curItem = await prisma.bazaar_items.findUnique({
       where: {
         id: data.item,
       },
     });
-    const curUser = await prisma.users.findUnique({
+    const curUser = await prisma.bazaar_users.findUnique({
       where: {
         username: req.token.username,
       },
@@ -159,7 +159,7 @@ router
       (data.seller === req.token.username && data.sell)
     ) {
       if (data.sell) {
-        const moneyFromAuction = await prisma.users.update({
+        const moneyFromAuction = await prisma.bazaar_users.update({
           where: {
             username: curItem.seller,
           },
@@ -169,7 +169,7 @@ router
             },
           },
         });
-        const sellItem = await prisma.items.update({
+        const sellItem = await prisma.bazaar_items.update({
           where: {
             id: data.item,
           },
@@ -177,12 +177,12 @@ router
             quantity: 0,
           },
         });
-        const buyingUser = await prisma.users.findUnique({
+        const buyingUser = await prisma.bazaar_users.findUnique({
           where: {
             username: data.buyer,
           },
         });
-        const wonAuctionMessage = await prisma.messages.create({
+        const wonAuctionMessage = await prisma.bazaar_messages.create({
           data: {
             sender: buyingUser.username,
             recipient: buyingUser.username,
@@ -197,12 +197,12 @@ router
           wonAuctionMessage,
         });
       } else if (curItem.type === "bid") {
-        const previousBid = await prisma.transactions.findFirst({
+        const previousBid = await prisma.bazaar_transactions.findFirst({
           where: {
             item: curItem.id,
           },
         });
-        const updatedItem = await prisma.items.update({
+        const updatedItem = await prisma.bazaar_items.update({
           where: {
             id: data.item,
           },
@@ -210,7 +210,7 @@ router
             price: data.total + 1000,
           },
         });
-        const buyingUser = await prisma.users.update({
+        const buyingUser = await prisma.bazaar_users.update({
           where: {
             username: data.buyer,
           },
@@ -221,12 +221,12 @@ router
           },
         });
         if (previousBid) {
-          const deletedBid = await prisma.transactions.deleteMany({
+          const deletedBid = await prisma.bazaar_transactions.deleteMany({
             where: {
               item: curItem.id,
             },
           });
-          const newTransaction = await prisma.transactions.create({
+          const newTransaction = await prisma.bazaar_transactions.create({
             data: {
               buyer: data.buyer,
               seller: data.seller,
@@ -236,7 +236,7 @@ router
               type: data.type,
             },
           });
-          const outbidUser = await prisma.users.update({
+          const outbidUser = await prisma.bazaar_users.update({
             where: {
               username: previousBid.buyer,
             },
@@ -246,7 +246,7 @@ router
               },
             },
           });
-          const systemMessage = await prisma.messages.create({
+          const systemMessage = await prisma.bazaar_messages.create({
             data: {
               sender: outbidUser.username,
               recipient: outbidUser.username,
@@ -264,7 +264,7 @@ router
             systemMessage,
           });
         }
-        const newTransaction = await prisma.transactions.create({
+        const newTransaction = await prisma.bazaar_transactions.create({
           data: {
             buyer: data.buyer,
             seller: data.seller,
@@ -281,7 +281,7 @@ router
           buyingUser,
         });
       } else {
-        const newTransaction = await prisma.transactions.create({
+        const newTransaction = await prisma.bazaar_transactions.create({
           data: {
             buyer: data.buyer,
             seller: data.seller,
@@ -291,7 +291,7 @@ router
             type: data.type,
           },
         });
-        const updatedItem = await prisma.items.update({
+        const updatedItem = await prisma.bazaar_items.update({
           where: {
             id: data.item,
           },
@@ -301,7 +301,7 @@ router
             },
           },
         });
-        const buyingUser = await prisma.users.update({
+        const buyingUser = await prisma.bazaar_users.update({
           where: {
             username: data.buyer,
           },
@@ -311,7 +311,7 @@ router
             },
           },
         });
-        const sellingUser = await prisma.users.update({
+        const sellingUser = await prisma.bazaar_users.update({
           where: {
             username: data.seller,
           },
@@ -321,7 +321,7 @@ router
             },
           },
         });
-        const profitMessage = await prisma.messages.create({
+        const profitMessage = await prisma.bazaar_messages.create({
           data: {
             sender: sellingUser.username,
             recipient: sellingUser.username,
